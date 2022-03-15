@@ -1,0 +1,5 @@
+/vendor
+composer.lock
+/lib
+index.php
+scripts.log

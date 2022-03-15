@@ -1,0 +1,27 @@
+{
+    "name": "drewlabs/net",
+    "description": "Networking utilities libraries",
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+        "name": "azandrew-sidoine",
+        "email": "asmyns.platonnas29@gmail.com"
+    }],
+    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.3|^7.4|^8.0|^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Drewlabs\\Net\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Drewlabs\\Net\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
