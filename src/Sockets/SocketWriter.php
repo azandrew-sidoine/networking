@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -18,11 +18,10 @@ interface SocketWriter
     /**
      * Write (all) data to the socket.
      * Timeout throws SocketTransportException.
-     * 
-     * @param string $buffer 
-     * @param int|null $chunkSize 
-     * @return void 
-     * @throws SocketTransportException 
+     *
+     * @throws SocketTransportException
+     *
+     * @return void
      */
-    public function write(string $buffer, ?int $chunkSize = null);
+    public function write(string $buffer, int $chunkSize = null);
 }

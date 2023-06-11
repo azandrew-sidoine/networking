@@ -1,5 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the drewlabs namespace.
+ *
+ * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Drewlabs\Net\Tests;
 
 use Drewlabs\Net\Ping\Client;
@@ -9,7 +20,6 @@ use PHPUnit\Framework\TestCase;
 
 class PingClientTest extends TestCase
 {
-    
     public function test_default_request()
     {
         $client = new Client('https://www.liksoft.tg');

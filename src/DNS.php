@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -13,44 +13,40 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net;
 
-use InvalidArgumentException;
-
 class DNS
 {
     /**
-     * Makes the TCP class to force using ip v4 connection
-     * 
+     * Makes the TCP class to force using ip v4 connection.
+     *
      * @var bool
      */
     public static $forceIpv4 = false;
 
     /**
-     * Makes the TCP class to force using ip v6 connection
-     * 
+     * Makes the TCP class to force using ip v6 connection.
+     *
      * @var bool
      */
     public static $forceIpv6 = false;
 
     /**
-     * Makes the DNS supports debugging
-     * 
+     * Makes the DNS supports debugging.
+     *
      * @var bool
      */
     private static $debugMode = false;
 
     /**
-     * Debug Logger
-     * 
+     * Debug Logger.
+     *
      * @var callable|null
      */
     private $debugLogger;
 
-
     /**
-     * Creates an instance of {@see DNS} class
-     * 
-     * @param callable|null $debugLogger 
-     * @return static 
+     * Creates an instance of {@see DNS} class.
+     *
+     * @return static
      */
     public function __construct(callable $debugLogger = null)
     {
@@ -58,10 +54,9 @@ class DNS
     }
 
     /**
-     * Query for a server address using the server ip address
-     * 
-     * @param string $ip 
-     * @return string|null 
+     * Query for a server address using the server ip address.
+     *
+     * @return string|null
      */
     public function getHostByAddress(string $ip)
     {
@@ -69,10 +64,9 @@ class DNS
     }
 
     /**
-     * Query for server ipv4 address using it domain name
-     * 
-     * @param string $host 
-     * @return string 
+     * Query for server ipv4 address using it domain name.
+     *
+     * @return string
      */
     public function getHostByName(string $host)
     {
@@ -80,13 +74,11 @@ class DNS
     }
 
     /**
-     * Query for DNS records using developper provided parameters
-     * 
-     * @param string $hostname 
-     * @param int $type 
-     * @param mixed $authoritativeNameServers 
-     * @param bool $raw 
-     * @return array 
+     * Query for DNS records using developper provided parameters.
+     *
+     * @param mixed $authoritativeNameServers
+     *
+     * @return array
      */
     public function getRecords(string $hostname, int $type, &$authoritativeNameServers = null, bool $raw = false)
     {
@@ -94,12 +86,11 @@ class DNS
     }
 
     /**
-     * Resolve a TCP host instance from a host string
-     * 
-     * @param string $host 
+     * Resolve a TCP host instance from a host string.
+     *
      * @param string|int $port
-     * @param bool $resolveHostByAddress
-     * @return Host 
+     *
+     * @return Host
      */
     public function resolveHost(string $host, $port, bool $resolveHostByAddress = false)
     {
@@ -126,7 +117,7 @@ class DNS
             // if not in IPv4 only mode, check the AAAA records first
             $records = $this->getRecords($hostname, \DNS_AAAA);
             if ((false === $records) && $this->debug) {
-                $this->log('DNS lookup for AAAA records for: ' . $hostname . ' failed');
+                $this->log('DNS lookup for AAAA records for: '.$hostname.' failed');
             }
             if ($records) {
                 foreach ($records as $record) {
@@ -136,14 +127,14 @@ class DNS
                 }
             }
             if ($this->isDebugging()) {
-                $this->log("IPv6 addresses for $hostname: " . implode(', ', $ip6s));
+                $this->log("IPv6 addresses for $hostname: ".implode(', ', $ip6s));
             }
         }
         if (!self::$forceIpv6) {
             // if not in IPv6 mode check the A records also
             $records = $this->getRecords($hostname, \DNS_A);
             if ((false === $records) && $this->debug) {
-                $this->log('DNS lookup for A records for: ' . $hostname . ' failed');
+                $this->log('DNS lookup for A records for: '.$hostname.' failed');
             }
             if ($records) {
                 foreach ($records as $record) {
@@ -159,19 +150,21 @@ class DNS
             }
 
             if ($this->isDebugging()) {
-                $this->log("IPv4 addresses for $hostname: " . implode(', ', $ip4s));
+                $this->log("IPv4 addresses for $hostname: ".implode(', ', $ip4s));
             }
         }
+
         return new Host($hostname, $port, $ip4s, $ip6s);
     }
 
     /**
-     * Resolve a list of TCP host based on developper parameters
-     * 
-     * @param array $hosts 
-     * @param bool $resolveHostByAddress 
+     * Resolve a list of TCP host based on developper parameters.
+     *
+     * @param bool $resolveHostByAddress
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return Host[]
-     * @throws InvalidArgumentException 
      */
     public function resolveHosts(array $hosts, $resolveHostByAddress = false)
     {
@@ -181,9 +174,9 @@ class DNS
             [$h, $p] = $this->prepareHostPort($host);
             $tcpHost = $this->resolveHost($h, $p, $resolveHostByAddress);
             [$ip4s, $ip6s] = [$tcpHost->getIp4s(), $tcpHost->getIp6s()];
-            if ((self::$forceIpv4 && empty($ip4s)) ||
-                (self::$forceIpv6 && empty($ip6s)) ||
-                (empty($ip4s) && empty($ip6s))
+            if ((self::$forceIpv4 && empty($ip4s))
+                || (self::$forceIpv6 && empty($ip6s))
+                || (empty($ip4s) && empty($ip6s))
             ) {
                 continue;
             }
@@ -193,19 +186,20 @@ class DNS
             $tcpHosts[] = $tcpHost;
         }
         if ($this->isDebugging()) {
-            $this->log('Built connection pool of ' . \count($tcpHosts) . " host(s) with $index ip(s) in total");
+            $this->log('Built connection pool of '.\count($tcpHosts)." host(s) with $index ip(s) in total");
         }
 
         if (empty($tcpHosts)) {
             throw new \InvalidArgumentException('No valid hosts was found');
         }
+
         return $tcpHosts;
     }
 
     /**
-     * Debug property setter
-     * 
-     * @return void 
+     * Debug property setter.
+     *
+     * @return void
      */
     public static function debug()
     {
@@ -213,10 +207,9 @@ class DNS
     }
 
     /**
-     * Debug logger property setter
-     * 
-     * @param callable $debugLogger 
-     * @return void 
+     * Debug logger property setter.
+     *
+     * @return void
      */
     public function setDebugLogger(callable $debugLogger)
     {
@@ -224,20 +217,19 @@ class DNS
     }
 
     /**
-     * Returns true is running in debug mode
-     * 
-     * @return bool 
+     * Returns true is running in debug mode.
+     *
+     * @return bool
      */
     public function isDebugging()
     {
-        return boolval(static::$debugMode);
+        return (bool) static::$debugMode;
     }
 
     /**
-     * Log debug message using the debug logger
-     * 
-     * @param string $message 
-     * @return void 
+     * Log debug message using the debug logger.
+     *
+     * @return void
      */
     private function log(string $message)
     {
@@ -248,8 +240,9 @@ class DNS
 
     private function prepareHostPort($host)
     {
-        $p = is_array($host) ? $host[1] : (is_string($host) ? explode(':', $host)[1] ?? null : null);
-        $h = is_array($host) ? $host[0] : (is_string($host) ? explode(':', $host)[1] ?? $host : null);
+        $p = \is_array($host) ? $host[1] : (\is_string($host) ? explode(':', $host)[1] ?? null : null);
+        $h = \is_array($host) ? $host[0] : (\is_string($host) ? explode(':', $host)[1] ?? $host : null);
+
         return [$h, $p];
     }
 }

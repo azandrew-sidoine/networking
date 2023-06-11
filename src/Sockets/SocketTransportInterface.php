@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -15,11 +15,10 @@ namespace Drewlabs\Net\Sockets;
 
 interface SocketTransportInterface extends SocketReader, SocketWriter
 {
-
     /**
-     * Returns the socket instance
-     * 
-     * @return \Socket|resource 
+     * Returns the socket instance.
+     *
+     * @return \Socket|resource
      */
     public function getSocket();
 
@@ -39,7 +38,6 @@ interface SocketTransportInterface extends SocketReader, SocketWriter
      * @param int   $lvl
      */
     public function setSocketOption($option, $value, $lvl = \SOL_SOCKET);
-
 
     /**
      * Sets the send timeout.
@@ -70,15 +68,14 @@ interface SocketTransportInterface extends SocketReader, SocketWriter
      */
     public function isOpen();
 
-
     /**
      * Open the socket, trying to connect to each host in succession.
      * This will prefer IPv6 connections if forceIpv4 is not enabled.
      * If all hosts fail, a SocketTransportException is thrown.
      *
-     * @return void
-     * 
      * @throws SocketTransportException
+     *
+     * @return void
      */
     public function open();
 
@@ -86,7 +83,7 @@ interface SocketTransportInterface extends SocketReader, SocketWriter
      * Do a clean shutdown of the socket.
      * Since we don't reuse sockets, we can just close and forget about it,
      * but we choose to wait (linger) for the last data to come through.
-     * 
+     *
      * @return void
      */
     public function close();

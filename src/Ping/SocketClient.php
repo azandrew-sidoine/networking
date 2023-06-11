@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -32,7 +32,7 @@ class SocketClient implements ClientInterface
         $this->data = $data;
     }
 
-    public function send(string $host, ?int $port = null)
+    public function send(string $host, int $port = null)
     {
         /**
          * Calculate a checksum.
@@ -94,6 +94,7 @@ class SocketClient implements ClientInterface
                     $latency = round($latency * 1000, 4);
                 }
             }
+
             return new PingResult($latency, null, ($error = socket_last_error()) ? socket_strerror($error) : null, $ip);
         } finally {
             if ($socket) {

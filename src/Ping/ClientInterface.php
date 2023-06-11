@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -22,5 +22,5 @@ interface ClientInterface
      *
      * @return PingResult
      */
-    public function send(string $host, ?int $port = null);
+    public function send(string $host, int $port = null);
 }

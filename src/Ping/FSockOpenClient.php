@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -35,7 +35,7 @@ class FSockOpenClient implements ClientInterface
         $this->timeout = $timeout;
     }
 
-    public function send(string $host, ?int $port = null)
+    public function send(string $host, int $port = null)
     {
         $start = microtime(true);
         $latency = false;
@@ -47,6 +47,7 @@ class FSockOpenClient implements ClientInterface
             $latency = round($latency * 1000, 4);
             fclose($fp);
         }
+
         return new PingResult($latency);
     }
 }

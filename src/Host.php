@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -16,41 +16,41 @@ namespace Drewlabs\Net;
 class Host
 {
     /**
-     * Host name property
-     * 
+     * Host name property.
+     *
      * @var string
      */
     private $name;
 
     /**
-     * Host port number
-     * 
+     * Host port number.
+     *
      * @var int|string
      */
     private $port;
 
     /**
-     * IP6 list of addresses
-     * 
+     * IP6 list of addresses.
+     *
      * @var array
      */
     private $ip6s;
 
     /**
-     * IP4 list of addresses
-     * 
+     * IP4 list of addresses.
+     *
      * @var array
      */
     private $ip4s;
 
     /**
-     * Creates an instance of {@see Host} class
-     * 
-     * @param string $name 
-     * @param int|string $port 
-     * @param string[] $ip4s 
-     * @param string[] $ip6s 
-     * @return static 
+     * Creates class instance.
+     *
+     * @param int|string $port
+     * @param string[]   $ip4s
+     * @param string[]   $ip6s
+     *
+     * @return static
      */
     public function __construct(string $name, $port, array $ip4s = [], array $ip6s = [])
     {
@@ -61,9 +61,9 @@ class Host
     }
 
     /**
-     * Returns the name of the TCP host
-     * 
-     * @return string 
+     * Returns the name of the TCP host.
+     *
+     * @return string
      */
     public function getName()
     {
@@ -71,9 +71,9 @@ class Host
     }
 
     /**
-     * Returns the port number of the TCP host
-     * 
-     * @return int|string 
+     * Returns the port number of the TCP host.
+     *
+     * @return int|string
      */
     public function getPort()
     {
@@ -81,9 +81,9 @@ class Host
     }
 
     /**
-     * Returns the list of ip v4 addresses
-     * 
-     * @return array 
+     * Returns the list of ip v4 addresses.
+     *
+     * @return array
      */
     public function getIp4s()
     {
@@ -91,9 +91,9 @@ class Host
     }
 
     /**
-     * Returns the list of ip v6 addresses
-     * 
-     * @return array 
+     * Returns the list of ip v6 addresses.
+     *
+     * @return array
      */
     public function getIp6s()
     {

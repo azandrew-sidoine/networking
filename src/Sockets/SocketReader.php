@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -22,8 +22,6 @@ interface SocketReader
      * Returns false on timeout (technically EAGAIN error).
      * Throws SocketTransportException if data could not be read.
      *
-     * @param int $length
-     *
      * @throws SocketTransportException
      *
      * @return mixed
@@ -33,10 +31,10 @@ interface SocketReader
     /**
      * Read all the bytes, and block until they are read.
      * Timeout throws SocketTransportException.
-     * 
-     * @param int $length 
-     * @return string 
-     * @throws SocketTransportException 
+     *
+     * @throws SocketTransportException
+     *
+     * @return string
      */
     public function readAll(int $length);
 }

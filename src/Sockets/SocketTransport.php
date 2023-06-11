@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net\Sockets;
 
-use ArrayIterator;
 use Drewlabs\Net\DNS;
 
 /**
@@ -29,76 +28,70 @@ use Drewlabs\Net\DNS;
  */
 class SocketTransport implements SocketTransportInterface
 {
-
     /**
-     * 
-     * @var bool
-     */
-    private static $debugMode;
-
-    /**
-     * Forces transport to use TCP v6 connection
-     * 
-     * @var bool
-     */
-    private static $forceIpv6 = false;
-
-    /**
-     * Forces transport to use TCP v4 connection
-     * 
-     * @var bool
-     */
-    private static $forceIpv4 = false;
-
-
-    /**
-     * 
-     * @var int
-     */
-    private static $defaultSendTimeout = 100;
-    /**
-     * 
-     * @var int
-     */
-    private static $defaultRecvTimeout = 750;
-
-    /**
-     * Static random host
-     * 
+     * Static random host.
+     *
      * @var bool
      */
     public static $randomHost = false;
 
     /**
-     * TCP socket
-     * 
+     * TCP socket.
+     *
      * @var \Socket
      */
     protected $socket;
 
     /**
-     * List of hosts
-     * 
+     * List of hosts.
+     *
      * @var array
      */
     protected $hosts;
 
     /**
-     * Makes the socket connection persistable
-     * 
+     * Makes the socket connection persistable.
+     *
      * @var bool
      */
     protected $persist;
 
     /**
-     * 
      * @var callable
      */
     protected $debugLogger;
 
     /**
-     * DNS instance
-     * 
+     * @var bool
+     */
+    private static $debugMode;
+
+    /**
+     * Forces transport to use TCP v6 connection.
+     *
+     * @var bool
+     */
+    private static $forceIpv6 = false;
+
+    /**
+     * Forces transport to use TCP v4 connection.
+     *
+     * @var bool
+     */
+    private static $forceIpv4 = false;
+
+    /**
+     * @var int
+     */
+    private static $defaultSendTimeout = 100;
+    /**
+     * @var int
+     */
+    private static $defaultRecvTimeout = 750;
+
+    /**
+     * DNS instance.
+     *
      * @var DNS
      */
     private $dns;
@@ -106,16 +99,16 @@ class SocketTransport implements SocketTransportInterface
     /**
      * Construct a new socket for this transport to use.
      *
-     * @param string[]|string $hosts        list of hosts to try
-     * @param int[]|string[]|string|int $ports        list of ports to try, or a single common port
-     * @param bool  $persist      use persistent sockets
-     * @param mixed $debugLogger callback for debug info
+     * @param string[]|string           $hosts       list of hosts to try
+     * @param int[]|string[]|string|int $ports       list of ports to try, or a single common port
+     * @param bool                      $persist     use persistent sockets
+     * @param mixed                     $debugLogger callback for debug info
      */
     public function __construct($hosts, $ports, $persist = false, $debugLogger = null)
     {
         $this->debugLogger = $debugLogger ?: 'error_log';
         $this->dns = new DNS($this->debugLogger);
-        $this->hosts = $this->resolveHosts(is_array($hosts) ? $hosts : [$hosts], $ports);
+        $this->hosts = $this->resolveHosts(\is_array($hosts) ? $hosts : [$hosts], $ports);
         $this->persist = $persist;
     }
 
@@ -151,7 +144,7 @@ class SocketTransport implements SocketTransportInterface
             socket_set_option($this->socket, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray($timeout));
         }
     }
-    
+
     public function isOpen()
     {
         if (!(\is_resource($this->socket) || (class_exists(\Socket::class) && $this->socket instanceof \Socket))) {
@@ -163,7 +156,7 @@ class SocketTransport implements SocketTransportInterface
         $excepts = [$this->socket];
         $result = socket_select($rsock, $wsock, $excepts, 0);
         if (false === $result) {
-            throw new SocketTransportException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
         }
         if (!empty($excepts)) {
             return false;
@@ -177,7 +170,7 @@ class SocketTransport implements SocketTransportInterface
         if (!self::$forceIpv4) {
             $socket6 = @socket_create(\AF_INET6, \SOCK_STREAM, \SOL_TCP);
             if (false === $socket6) {
-                throw new SocketTransportException('Could not create socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not create socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
             socket_set_option($socket6, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
             socket_set_option($socket6, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
@@ -185,7 +178,7 @@ class SocketTransport implements SocketTransportInterface
         if (!self::$forceIpv6) {
             $socket4 = @socket_create(\AF_INET, \SOCK_STREAM, \SOL_TCP);
             if (false === $socket4) {
-                throw new SocketTransportException('Could not create socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not create socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
             socket_set_option($socket4, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
             socket_set_option($socket4, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
@@ -216,11 +209,12 @@ class SocketTransport implements SocketTransportInterface
                             @socket_close($socket4);
                         }
                         $this->socket = $socket6;
+
                         return;
                     }
-                    
+
                     if (self::$debugMode) {
-                        $this->log("Socket connect to $ip:$port failed; " . socket_strerror(socket_last_error()));
+                        $this->log("Socket connect to $ip:$port failed; ".socket_strerror(socket_last_error()));
                     }
                 }
             }
@@ -240,11 +234,12 @@ class SocketTransport implements SocketTransportInterface
                             @socket_close($socket6);
                         }
                         $this->socket = $socket4;
+
                         return;
                     }
-                    
+
                     if (self::$debugMode) {
-                        $this->log("Using ipv4, Socket connect to $ip:$port failed; " . socket_strerror(socket_last_error()));
+                        $this->log("Using ipv4, Socket connect to $ip:$port failed; ".socket_strerror(socket_last_error()));
                     }
                 }
             }
@@ -253,7 +248,6 @@ class SocketTransport implements SocketTransportInterface
         throw new SocketTransportException('Could not connect to any of the specified hosts');
     }
 
-    
     public function close()
     {
         $arrOpt = ['l_onoff' => 1, 'l_linger' => 1];
@@ -276,7 +270,7 @@ class SocketTransport implements SocketTransportInterface
         $excepts = null;
         $result = socket_select($rsock, $wsock, $excepts, 0);
         if (false === $result) {
-            throw new SocketTransportException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
         }
 
         if (!empty($rsock)) {
@@ -294,7 +288,7 @@ class SocketTransport implements SocketTransportInterface
         }
         // sockets give EAGAIN on timeout
         if (false === $data) {
-            throw new SocketTransportException('Could not read ' . $length . ' bytes from socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketTransportException('Could not read '.$length.' bytes from socket; '.socket_strerror(socket_last_error()), socket_last_error());
         }
 
         if ('' === $data) {
@@ -314,7 +308,7 @@ class SocketTransport implements SocketTransportInterface
             $buffer = '';
             $bytes += socket_recv($this->socket, $buffer, $length - $bytes, \MSG_DONTWAIT);
             if (false === $bytes) {
-                throw new SocketTransportException('Could not read ' . $length . ' bytes from socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not read '.$length.' bytes from socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             $data .= $buffer;
@@ -330,29 +324,30 @@ class SocketTransport implements SocketTransportInterface
 
             // check
             if (false === $result) {
-                throw new SocketTransportException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (!empty($excepts)) {
-                throw new SocketTransportException('Socket exception while waiting for data; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Socket exception while waiting for data; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (empty($rsock)) {
                 throw new SocketTransportException('Timed out waiting for data on socket');
             }
         }
+
         return $data;
     }
 
-    public function write(string $buffer, ?int $chunkSize = null)
+    public function write(string $buffer, int $chunkSize = null)
     {
-        $bytes = $chunkSize ?? strlen($buffer);
+        $bytes = $chunkSize ?? \strlen($buffer);
         $writeTimeout = socket_get_option($this->socket, \SOL_SOCKET, \SO_SNDTIMEO);
 
         while ($bytes > 0) {
             $wrote = socket_write($this->socket, $buffer, $bytes);
             if (false === $wrote) {
-                throw new SocketTransportException('Could not write ' . $chunkSize . ' bytes to socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not write '.$chunkSize.' bytes to socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             $bytes -= $wrote;
@@ -370,11 +365,11 @@ class SocketTransport implements SocketTransportInterface
 
             // check
             if (false === $result) {
-                throw new SocketTransportException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (!empty($excepts)) {
-                throw new SocketTransportException('Socket exception while waiting to write data; ' . socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketTransportException('Socket exception while waiting to write data; '.socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (empty($wsock)) {
@@ -384,32 +379,9 @@ class SocketTransport implements SocketTransportInterface
     }
 
     /**
-     * Resolve the hostnames into IPs, and sort them into IPv4 or IPv6 groups.
-     * If using DNS hostnames, and all lookups fail, a \InvalidArgumentException is thrown.
+     * Static method setting the forceIpv4 for the transport.
      *
-     * @param array $hosts
-     * @param int|string|int[]|string[] $name
-     *
-     * @throws \InvalidArgumentException
-     */
-    protected function resolveHosts(array $hosts, $ports)
-    {
-        // Deal with optional port
-        $list = [];
-        foreach ($hosts as $key => $host) {
-            $list[] = [$host, \is_array($ports) ? $ports[$key] : $ports];
-        }
-        if (self::$randomHost) {
-            shuffle($list);
-        }
-        return $this->dns->resolveHosts($list, false);
-    }
-
-    /**
-     * Static method setting the forceIpv4 for the transport
-     * 
-     * @param bool $value 
-     * @return void 
+     * @return void
      */
     public static function setForceIpv4(bool $value)
     {
@@ -418,10 +390,9 @@ class SocketTransport implements SocketTransportInterface
     }
 
     /**
-     * Static method setting the forceIpv6 for the transport
-     * 
-     * @param bool $value 
-     * @return void 
+     * Static method setting the forceIpv6 for the transport.
+     *
+     * @return void
      */
     public static function setForceIpv6(bool $value)
     {
@@ -447,10 +418,29 @@ class SocketTransport implements SocketTransportInterface
     }
 
     /**
-     * Log debug message using the debug logger
-     * 
-     * @param string $message 
-     * @return void 
+     * Resolve the hostnames into IPs, and sort them into IPv4 or IPv6 groups.
+     * If using DNS hostnames, and all lookups fail, a \InvalidArgumentException is thrown.
+     *
+     * @throws \InvalidArgumentException
+     */
+    protected function resolveHosts(array $hosts, $ports)
+    {
+        // Deal with optional port
+        $list = [];
+        foreach ($hosts as $key => $host) {
+            $list[] = [$host, \is_array($ports) ? $ports[$key] : $ports];
+        }
+        if (self::$randomHost) {
+            shuffle($list);
+        }
+
+        return $this->dns->resolveHosts($list, false);
+    }
+
+    /**
+     * Log debug message using the debug logger.
+     *
+     * @return void
      */
     private function log(string $message)
     {
@@ -460,13 +450,12 @@ class SocketTransport implements SocketTransportInterface
     /**
      * Convert a milliseconds into a socket sec+usec array.
      *
-     * @param int $ms
-     *
      * @return array
      */
     private function msToSolArray(int $ms)
     {
         $usec = $ms * 1000;
+
         return ['sec' => floor($usec / 1000000), 'usec' => $usec % 1000000];
     }
 }

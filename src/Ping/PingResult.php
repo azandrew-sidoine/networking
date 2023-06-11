@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -31,7 +31,6 @@ class PingResult
     private $error;
 
     /**
-     * 
      * @var string
      */
     private $ip;
@@ -41,7 +40,7 @@ class PingResult
      *
      * @return void
      */
-    public function __construct($latency, ?string $output = null, ?string $error = null, ?string $ip = null)
+    public function __construct($latency, string $output = null, string $error = null, string $ip = null)
     {
         $this->latency = $latency;
         $this->output = $output;

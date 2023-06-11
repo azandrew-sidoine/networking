@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Drewlabs package.
+ * This file is part of the drewlabs namespace.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -61,7 +61,7 @@ class Client
      *
      * @throws \Exception if the host is not set
      */
-    public function __construct(?string $host = null, ?int $port = 80, int $timeout = 1000, int $ttl = 255)
+    public function __construct(string $host = null, ?int $port = 80, int $timeout = 1000, int $ttl = 255)
     {
         [$host, $port] = $this->parseHost($host, $port);
         $this->host = $host;
@@ -129,9 +129,9 @@ class Client
     }
 
     /**
-     * @return (string|int)[]|(int|null|string)[]
+     * @return (string|int)[]|(int|string|null)[]
      */
-    private function parseHost(string $url, ?int $port = null)
+    private function parseHost(string $url, int $port = null)
     {
         if (!preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/', $url)) {
             /**
