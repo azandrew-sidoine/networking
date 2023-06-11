@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net\Sockets;
 
-interface SocketReader
+interface StreamReader
 {
     /**
      * Read up to $length bytes from the socket.
@@ -22,7 +22,7 @@ interface SocketReader
      * Returns false on timeout (technically EAGAIN error).
      * Throws SocketTransportException if data could not be read.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      *
      * @return mixed
      */
@@ -32,7 +32,7 @@ interface SocketReader
      * Read all the bytes, and block until they are read.
      * Timeout throws SocketTransportException.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      *
      * @return string
      */

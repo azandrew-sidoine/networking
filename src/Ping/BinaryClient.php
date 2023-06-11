@@ -41,21 +41,6 @@ class BinaryClient implements ClientInterface
         $this->ttl = $ttl;
     }
 
-    /**
-     * Matches an IP on command output and returns.
-     *
-     * @return string
-     */
-    public function getIpAddress()
-    {
-        $match = [];
-        if (preg_match('/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/', $this->output, $match)) {
-            return $match[0];
-        }
-
-        return null;
-    }
-
     public function send(string $host, int $port = null)
     {
         $latency = false;

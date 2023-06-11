@@ -13,6 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net\Sockets;
 
-class SocketTransportException extends \Exception
+class SocketStreamException extends \Exception
 {
 }

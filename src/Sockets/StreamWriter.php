@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net\Sockets;
 
-interface SocketWriter
+interface StreamWriter
 {
     /**
      * Write (all) data to the socket.
      * Timeout throws SocketTransportException.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      *
      * @return void
      */

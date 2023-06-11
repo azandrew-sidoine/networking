@@ -26,7 +26,7 @@ use Drewlabs\Net\DNS;
  *
  * @author hd@onlinecity.dk
  */
-class SocketTransport implements SocketTransportInterface
+class SocketStream implements SocketStreamInterface
 {
     /**
      * Static random host.
@@ -65,13 +65,6 @@ class SocketTransport implements SocketTransportInterface
      * @var bool
      */
     private static $debugMode;
-
-    /**
-     * Forces transport to use TCP v6 connection.
-     *
-     * @var bool
-     */
-    private static $forceIpv6 = false;
 
     /**
      * Forces transport to use TCP v4 connection.
@@ -156,7 +149,7 @@ class SocketTransport implements SocketTransportInterface
         $excepts = [$this->socket];
         $result = socket_select($rsock, $wsock, $excepts, 0);
         if (false === $result) {
-            throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketStreamException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
         }
         if (!empty($excepts)) {
             return false;
@@ -165,87 +158,77 @@ class SocketTransport implements SocketTransportInterface
         return true;
     }
 
-    public function open()
+    public function open(int $type = \SOCK_STREAM, int $protocol = \SOL_TCP)
     {
+        // Use Ipv6 socket by default if not forcing Ipv4 connection
         if (!self::$forceIpv4) {
-            $socket6 = @socket_create(\AF_INET6, \SOCK_STREAM, \SOL_TCP);
-            if (false === $socket6) {
-                throw new SocketTransportException('Could not create socket; '.socket_strerror(socket_last_error()), socket_last_error());
-            }
-            socket_set_option($socket6, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
-            socket_set_option($socket6, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
+            $this->openIPv6Socket($type, $protocol);
         }
-        if (!self::$forceIpv6) {
-            $socket4 = @socket_create(\AF_INET, \SOCK_STREAM, \SOL_TCP);
-            if (false === $socket4) {
-                throw new SocketTransportException('Could not create socket; '.socket_strerror(socket_last_error()), socket_last_error());
-            }
-            socket_set_option($socket4, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
-            socket_set_option($socket4, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
+
+        // Case the socket could not be resolve using Ipv6 connection, use ipv4
+        if (null === $this->socket) {
+            $this->openIPv4Socket($type, $protocol);
         }
-        /**
-         * @var \ArrayIterator<Host>
-         */
+        
+        // Case the socket property is still null, we throw an exception
+        if (null === $this->socket) {
+            throw new SocketStreamException('Could not connect to any of the specified hosts');
+        }
+    }
+
+    private function openIPv4Socket(int $type = \SOCK_STREAM, $protocol = \SOL_TCP)
+    {
+        $socket = @socket_create(\AF_INET, $type, $protocol);
+        if (false === $socket) {
+            throw new SocketStreamException('Could not create socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+        }
+        socket_set_option($socket, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
+        socket_set_option($socket, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
+
+        // Creates a sockets iterator
         $hosts = new \ArrayIterator($this->hosts);
         while ($hosts->valid()) {
-            /**
-             * @var Host
-             */
             $host = $hosts->current();
-            [$port, $ip6s, $ip4s] = [$host->getPort(), $host->getIp6s(), $host->getIp4s()];
-            if (!self::$forceIpv4 && !empty($ip6s)) {
-                foreach ($ip6s as $ip) {
-                    if (self::$debugMode) {
-                        $this->log("Connecting to $ip:$port...");
-                    }
-                    $rsock = @socket_connect($socket6, $ip, $port);
-                    if ($rsock) {
-                        if (self::$debugMode) {
-                            $this->log("Connected to $ip:$port!");
-                        }
-                        // In case we were able to create a TPC v6 connection, we drop any v4 connection
-                        // if exists
-                        if (isset($socket4) && (null !== $socket4)) {
-                            @socket_close($socket4);
-                        }
-                        $this->socket = $socket6;
-
-                        return;
-                    }
-
-                    if (self::$debugMode) {
-                        $this->log("Socket connect to $ip:$port failed; ".socket_strerror(socket_last_error()));
-                    }
+            foreach ($host->getIp4s() as $ip) {
+                $port = $host->getPort();
+                $this->log("Using ipv4, Connecting to $ip:$port...");
+                if (@socket_connect($socket, $ip, $port)) {
+                    $this->log("Using ipv4, Connected to $ip:$port!");
+                    $this->socket = $socket;
+                    return;
                 }
+                $this->log("Using ipv4, Socket connect to $ip:$port failed; " . socket_strerror(socket_last_error()));
             }
-            if (!self::$forceIpv6 && !empty($ip4s)) {
-                foreach ($ip4s as $ip) {
-                    if (self::$debugMode) {
-                        $this->log("Using ipv4, Connecting to $ip:$port...");
-                    }
-                    $rsock = @socket_connect($socket4, $ip, $port);
-                    if ($rsock) {
-                        if (self::$debugMode) {
-                            $this->log("Using ipv4, Connected to $ip:$port!");
-                        }
-                        // In case we were able to create a TPC v6 connection, we drop any v4 connection
-                        // if exists
-                        if (isset($socket6) && null !== $socket6) {
-                            @socket_close($socket6);
-                        }
-                        $this->socket = $socket4;
+            $hosts->next();
+        }
+    }
 
-                        return;
-                    }
+    private function openIPv6Socket(int $type = \SOCK_STREAM, $protocol = \SOL_TCP)
+    {
+        $socket = @socket_create(\AF_INET6, $type, $protocol);
+        if (false === $socket) {
+            throw new SocketStreamException('Could not create socket; ' . socket_strerror(socket_last_error()), socket_last_error());
+        }
+        socket_set_option($socket, \SOL_SOCKET, \SO_SNDTIMEO, $this->msToSolArray(self::$defaultSendTimeout));
+        socket_set_option($socket, \SOL_SOCKET, \SO_RCVTIMEO, $this->msToSolArray(self::$defaultRecvTimeout));
 
-                    if (self::$debugMode) {
-                        $this->log("Using ipv4, Socket connect to $ip:$port failed; ".socket_strerror(socket_last_error()));
-                    }
+        // Creates a sockets iterator
+        $hosts = new \ArrayIterator($this->hosts);
+        while ($hosts->valid()) {
+            $host = $hosts->current();
+            foreach ($host->getIp6s() as $ip) {
+                $port = $host->getPort();
+                $this->log("Connecting to $ip:$port...");
+                if (@socket_connect($socket, $ip, $port)) {
+                    $this->log("Connected to $ip:$port!");
+                    $this->socket = $socket;
+                    return;
+                } else {
+                    $this->log("Socket connect to $ip:$port failed; " . socket_strerror(socket_last_error()));
                 }
             }
             $hosts->next();
         }
-        throw new SocketTransportException('Could not connect to any of the specified hosts');
     }
 
     public function close()
@@ -259,7 +242,7 @@ class SocketTransport implements SocketTransportInterface
     /**
      * Check if there is data waiting for us on the wire.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      *
      * @return bool
      */
@@ -270,7 +253,7 @@ class SocketTransport implements SocketTransportInterface
         $excepts = null;
         $result = socket_select($rsock, $wsock, $excepts, 0);
         if (false === $result) {
-            throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketStreamException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
         }
 
         if (!empty($rsock)) {
@@ -288,7 +271,7 @@ class SocketTransport implements SocketTransportInterface
         }
         // sockets give EAGAIN on timeout
         if (false === $data) {
-            throw new SocketTransportException('Could not read '.$length.' bytes from socket; '.socket_strerror(socket_last_error()), socket_last_error());
+            throw new SocketStreamException('Could not read ' . $length . ' bytes from socket; ' . socket_strerror(socket_last_error()), socket_last_error());
         }
 
         if ('' === $data) {
@@ -308,7 +291,7 @@ class SocketTransport implements SocketTransportInterface
             $buffer = '';
             $bytes += socket_recv($this->socket, $buffer, $length - $bytes, \MSG_DONTWAIT);
             if (false === $bytes) {
-                throw new SocketTransportException('Could not read '.$length.' bytes from socket; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Could not read ' . $length . ' bytes from socket; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             $data .= $buffer;
@@ -324,15 +307,15 @@ class SocketTransport implements SocketTransportInterface
 
             // check
             if (false === $result) {
-                throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (!empty($excepts)) {
-                throw new SocketTransportException('Socket exception while waiting for data; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Socket exception while waiting for data; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (empty($rsock)) {
-                throw new SocketTransportException('Timed out waiting for data on socket');
+                throw new SocketStreamException('Timed out waiting for data on socket');
             }
         }
 
@@ -347,7 +330,7 @@ class SocketTransport implements SocketTransportInterface
         while ($bytes > 0) {
             $wrote = socket_write($this->socket, $buffer, $bytes);
             if (false === $wrote) {
-                throw new SocketTransportException('Could not write '.$chunkSize.' bytes to socket; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Could not write ' . $chunkSize . ' bytes to socket; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             $bytes -= $wrote;
@@ -365,15 +348,15 @@ class SocketTransport implements SocketTransportInterface
 
             // check
             if (false === $result) {
-                throw new SocketTransportException('Could not examine socket; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Could not examine socket; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (!empty($excepts)) {
-                throw new SocketTransportException('Socket exception while waiting to write data; '.socket_strerror(socket_last_error()), socket_last_error());
+                throw new SocketStreamException('Socket exception while waiting to write data; ' . socket_strerror(socket_last_error()), socket_last_error());
             }
 
             if (empty($wsock)) {
-                throw new SocketTransportException('Timed out waiting to write data on socket');
+                throw new SocketStreamException('Timed out waiting to write data on socket');
             }
         }
     }
@@ -387,17 +370,6 @@ class SocketTransport implements SocketTransportInterface
     {
         static::$forceIpv4 = $value;
         DNS::$forceIpv4 = $value;
-    }
-
-    /**
-     * Static method setting the forceIpv6 for the transport.
-     *
-     * @return void
-     */
-    public static function setForceIpv6(bool $value)
-    {
-        static::$forceIpv6 = $value;
-        DNS::$forceIpv6 = $value;
     }
 
     public function setDebugLogger(callable $debugLogger)
@@ -444,7 +416,9 @@ class SocketTransport implements SocketTransportInterface
      */
     private function log(string $message)
     {
-        \call_user_func($this->debugLogger, $message);
+        if (self::$debugMode) {
+            \call_user_func($this->debugLogger, $message);
+        }
     }
 
     /**

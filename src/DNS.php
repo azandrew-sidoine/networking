@@ -116,7 +116,7 @@ class DNS
         if (!self::$forceIpv4) {
             // if not in IPv4 only mode, check the AAAA records first
             $records = $this->getRecords($hostname, \DNS_AAAA);
-            if ((false === $records) && $this->debug) {
+            if (false === $records) {
                 $this->log('DNS lookup for AAAA records for: '.$hostname.' failed');
             }
             if ($records) {
@@ -126,14 +126,12 @@ class DNS
                     }
                 }
             }
-            if ($this->isDebugging()) {
-                $this->log("IPv6 addresses for $hostname: ".implode(', ', $ip6s));
-            }
+            $this->log("IPv6 addresses for $hostname: ".implode(', ', $ip6s));
         }
         if (!self::$forceIpv6) {
             // if not in IPv6 mode check the A records also
             $records = $this->getRecords($hostname, \DNS_A);
-            if ((false === $records) && $this->debug) {
+            if (false === $records) {
                 $this->log('DNS lookup for A records for: '.$hostname.' failed');
             }
             if ($records) {
@@ -148,10 +146,7 @@ class DNS
             if ($ip !== $hostname && !\in_array($ip, $ip4s, true)) {
                 $ip4s[] = $ip;
             }
-
-            if ($this->isDebugging()) {
-                $this->log("IPv4 addresses for $hostname: ".implode(', ', $ip4s));
-            }
+            $this->log("IPv4 addresses for $hostname: ".implode(', ', $ip4s));
         }
 
         return new Host($hostname, $port, $ip4s, $ip6s);
@@ -185,9 +180,7 @@ class DNS
             }
             $tcpHosts[] = $tcpHost;
         }
-        if ($this->isDebugging()) {
-            $this->log('Built connection pool of '.\count($tcpHosts)." host(s) with $index ip(s) in total");
-        }
+        $this->log('Built connection pool of '.\count($tcpHosts)." host(s) with $index ip(s) in total");
 
         if (empty($tcpHosts)) {
             throw new \InvalidArgumentException('No valid hosts was found');
@@ -233,7 +226,7 @@ class DNS
      */
     private function log(string $message)
     {
-        if ($this->debugLogger) {
+        if ($this->isDebugging() && (null !== $this->debugLogger)) {
             \call_user_func($this->debugLogger, $message);
         }
     }

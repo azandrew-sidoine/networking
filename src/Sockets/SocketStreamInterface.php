@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Drewlabs\Net\Sockets;
 
-interface SocketTransportInterface extends SocketReader, SocketWriter
+interface SocketStreamInterface extends StreamReader, StreamWriter
 {
     /**
      * Returns the socket instance.
@@ -64,7 +64,7 @@ interface SocketTransportInterface extends SocketReader, SocketWriter
      * Returns false if it's closed.
      * Throws SocketTransportException is state could not be ascertained.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      */
     public function isOpen();
 
@@ -73,11 +73,11 @@ interface SocketTransportInterface extends SocketReader, SocketWriter
      * This will prefer IPv6 connections if forceIpv4 is not enabled.
      * If all hosts fail, a SocketTransportException is thrown.
      *
-     * @throws SocketTransportException
+     * @throws SocketStreamException
      *
      * @return void
      */
-    public function open();
+    public function open(int $type = \SOCK_STREAM, int $protocol = \SOL_TCP);
 
     /**
      * Do a clean shutdown of the socket.
