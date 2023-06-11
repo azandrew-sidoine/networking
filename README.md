@@ -4,36 +4,6 @@ This package provide developper with networking utilities.
 
 Note: The package is under development and APIs are subject to changes.
 
-
-## Installation
-
-It's recommended to install the package using composer dependencies manager.
-
-At the root of your application, create a file composer.json:
-
-```json
-{
-  // Other requirements
-  "require": {
-    // Existing libraries
-    // Network utilities library
-    "drewlabs/net": "^0.1.0"
-  },
-   
-  // Specify the github package repository
-  repositories: [
-    {
-      "type": "vcs",
-      "url": "git@github.com:liksoft/drewlabs-net.git"
-    }
-  ]
-}
-```
-
-Then execute composer cli to update packages:
-
-> composer update
-
 ## Usage
 
 ## Ping request
